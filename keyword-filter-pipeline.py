@@ -163,6 +163,101 @@ def zst_keyword_filter():
     count_file.close()
 
 
+
+def zst_dosages_filter():  
+    dosage_pattern = re.compile(r"\b\d+(\.\d+)?\s?(mg|g|ml|%)\b")
+    from keyword_lists import compounds_short
+    patterns = [re.compile(rf'\b{re.escape(word)}\b', re.IGNORECASE) for word in compounds_short]
+
+    count_file = open("line_counts_dosage.csv", 'w')
+    count_writer = csv.writer(count_file)
+    count_writer.writerow(["file", "total_lines", "keyword_lines"])
+
+    output_folder = "keyword_hits"
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    directory = os.fsencode(parent_directory)
+    for file in os.listdir(directory):
+        filename = os.fsdecode(file)
+        input_path = parent_directory + "/" + filename # the path to the input comment file
+
+        # Write output file
+        output_name = None #set to null to catch any errors in below regex
+        match = re.match(r'^([^_]+_[a-zA-Z])', filename) #subreddit name + _c or _s (comments, submissions)
+        if match:
+            shortname = match.group(1) 
+            output_name = shortname + "_keyword_hits.csv" 
+        else:
+            print("Error in regex: no match found: " + filename) #this shouldn't ever happen 
+            
+        output_path = output_folder + "/" + output_name
+
+        csv_file = open(output_path, 'w')
+        writer = csv.writer(csv_file)
+        writer.writerow(["id","text","keywords"])
+
+        # bunch of initialization stuff
+        file_lines = 0
+        hit_lines = 0
+        file_bytes_processed = 0
+        created = None
+        bad_lines = 0
+        current_day = None
+        input_size = os.stat(input_path).st_size
+
+        try:
+            # this is the main loop where we iterate over every single line in the zst file
+            for line, file_bytes_processed in read_lines_zst(input_path):
+                try:
+                    obj = json.loads(line) # load the line into a json object
+                    created = datetime.utcfromtimestamp(int(obj['created_utc'])) #date obj transform
+                    
+                    if created >= start_date: # skip if we're before the start date defined above
+                        if "comments" in filename:
+                            body_lower = obj['body'].lower() #probably redundant
+                            dosages = dosage_pattern.findall(body_lower)
+                            if len(dosages) > 0:
+                                if any(pattern.search(body_lower) for pattern in patterns): # checking for a match
+                                    matches = [kw for kw, pattern in zip(phrases, patterns) if pattern.search(body_lower)]
+                                    writer.writerow([obj['id'], body_lower, matches])
+                                    hit_lines += 1
+                        elif "submissions" in filename:
+                            title_lower = obj['title'].lower()
+                            text_lower = obj['selftext'].lower()
+                            if text_lower == "[deleted]" or text_lower == "[removed]": #skip any posts with a missing body
+                                continue
+                            dosages_title = dosage_pattern.findall(title_lower)
+                            dosages_text = dosage_pattern.findall(text_lower)
+                            if len(dosages_title) > 0 or len(dosages_text) > 0:
+                                if any(pattern.search(title_lower) for pattern in patterns): 
+                                    matches = [kw for kw, pattern in zip(phrases, patterns) if pattern.search(title_lower)]
+                                    writer.writerow([obj['id'], title_lower + " /// " + text_lower, matches]) #/// is just to separate the title & body text
+                                    hit_lines += 1
+                                elif any(pattern.search(text_lower) for pattern in patterns):
+                                    matches = [kw for kw, pattern in zip(phrases, patterns) if pattern.search(text_lower)]
+                                    writer.writerow([obj['id'], title_lower + " /// " + text_lower, matches])
+                                    hit_lines += 1
+                            
+                # just in case there's corruption somewhere in the file
+                except (KeyError, json.JSONDecodeError) as err:
+                    bad_lines += 1
+                file_lines += 1
+                if file_lines % 100000 == 0:
+                    log.info(f" {filename} : {file_lines:,} : {bad_lines:,} : {(file_bytes_processed / input_size) * 100:.0f}%")
+        except Exception as err:
+            log.info(err)
+
+        log.info(f"{filename} Complete : {file_lines:,} : {bad_lines:,}")
+            # the path to the output csv file of word counts
+
+        #add total lines to a csv 
+        count_writer.writerow([filename, file_lines, hit_lines])
+
+        csv_file.close()
+    count_file.close()
+
+
 #get frequencies of all the words from list phrases in the dataset, wordcounts.csv
 #just some descriptives
 def word_counts(csv_folder):  
@@ -457,10 +552,11 @@ if __name__ == "__main__":
     ## Step 1: Rough keyword filtering - go from zsts to filtered csvs
     # zst_keyword_filter() #creates csv's of all the keyword hits + prevalence counts
     # word_counts("keyword_hits/csvs_2") #get frequencies of all the keywords
+    # zst_dosages_filter() #looks for cannabis dosages only
     
     ## Step 2: Classification (final text selection)
     ## Option 2a: Manual classification for ground truths
-    # sample_rows(50, "keyword_hits") #produces (psuedo)random samples 
+    sample_rows(50, "keyword_hits") #produces (psuedo)random samples 
     # false_positives("sampled_dataset_LABELLED.csv") #calculates precision by keyword & samples some rare keyword hits for further labeling
 
     ## Option 2b: Keyword filtering

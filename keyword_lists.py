@@ -46,6 +46,11 @@ compounds = [
     "terpenoids", "flavonoids", "cannabis metabolites", "cannabinoid tolerance", "cannabidiol"
 ] # removed: "isolate",
 
+compounds_short = [
+    "THC", "CBD", "CBN", "CBG", "CBC", "THCA", "CBDA", "THCV", "CBDV", "delta-8 THC", "delta 8", "delta-8", "delta 9", "delta-9",
+    "delta-10", "HHC", "HHCO", "THCP", "CBL", "CBT", "CBE", "exo-THC", "cannabinoids", "marijuana", "cannabis", "weed"
+]
+
 ingestion_methods = [
     "smoking", "vaping", "edibles", "tinctures", "topicals", "transdermal patches", "dabbing", 
     "capsules", "sublingual drops", "tea",
