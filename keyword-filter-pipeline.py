@@ -163,11 +163,10 @@ def zst_keyword_filter():
     count_file.close()
 
 
-
 def zst_dosages_filter():  
     dosage_pattern = re.compile(r"\b\d+(\.\d+)?\s?(mg|g|ml|%)\b")
-    from keyword_lists import compounds_short
-    patterns = [re.compile(rf'\b{re.escape(word)}\b', re.IGNORECASE) for word in compounds_short]
+    from keyword_lists import compounds_short as phrases
+    patterns = [re.compile(rf'\b{re.escape(word)}\b', re.IGNORECASE) for word in phrases]
 
     count_file = open("line_counts_dosage.csv", 'w')
     count_writer = csv.writer(count_file)
