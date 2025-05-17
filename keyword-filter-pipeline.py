@@ -1,3 +1,51 @@
+"""
+Keyword Filter Pipeline
+
+This script processes compressed Reddit data, extracts relevant fields, filters for health-related keywords
+(e.g., pain, anxiety, sleep), and optionally applies supervised ML (TF-IDF + Logistic Regression) and embeddings
+to support classification or annotation efforts.
+
+Dependencies:
+- pandas
+- scikit-learn
+- sentence-transformers
+- nltk
+- matplotlib
+"""
+
+import os, json, string, csv, re
+import zstandard
+from collections import defaultdict
+from datetime import datetime
+import logging.handlers
+import ast
+
+import pandas as pd
+
+# Supervised machine learning (TF-IDF + Logistic Regression)
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import make_pipeline
+from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
+
+import matplotlib.pyplot as plt
+
+# Sentence embedding model
+from sentence_transformers import SentenceTransformer
+embedder = SentenceTransformer("all-MiniLM-L6-v2")
+
+# NLTK stopwords
+import nltk
+from nltk.corpus import stopwords
+# nltk.download('stopwords') # Uncomment if running for the first time
+stopwords = set(stopwords.words('english'))
+
+# === CONFIGURATION ===
+# Start filtering from this date forward
+start_date = datetime(2019, 1, 1)
+
+# Add further documentation below for each function, variable, and processing block as needed
 import os,json, string, csv, re
 import zstandard
 from collections import defaultdict
@@ -309,29 +357,6 @@ def sample_rows(n, csv_folder):
 
     #combine
     sampled_df = pd.concat(sampled_rows, ignore_index=True)
-
-    #this is getting crazy, leave it alone for now. trying to make sure there's a minimum of 10 of each keyword sampled
-    # keyword_freq = {}
-    # for _, row in sampled_df.iterrows():
-    #     for keyword in ast.literal_eval(row['keywords']):
-    #         keyword_freq[keyword] = keyword_freq.get(keyword, 0) + 1
-
-    # for k in phrases:
-    #     if keyword_freq.get(k, 0) < 10:
-    #         for filename in os.listdir(csv_folder):
-    #             if filename.endswith(".csv"):
-    #                 filepath = os.path.join(csv_folder, filename)
-    #                 df = pd.read_csv(filepath)
-    #                 try:
-    #                     moresamp = df.loc[df['keywords'].str.contains(k, case=False, na=False)].sample(n=10, random_state=42)
-    #                 except:
-    #                     moresamp = df.loc[df['keywords'].str.contains(k, case=False, na=False)]
-    #                 moresamp['source_file'] = filename  # track origin
-    #                 sampled_rows.append(moresamp)
-
-    # #combine again
-    # sampled_df = pd.concat(sampled_rows, ignore_index=True)
-    # print(sampled_df)
     sampled_df.to_csv("sampled_dataset.csv", index=False)
 
 
@@ -572,9 +597,3 @@ if __name__ == "__main__":
 
     ## Option 2e: GPT semantic classification
     # skipping for now bc I don't want to set up an API account
-
-
-
-
-
-
