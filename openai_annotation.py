@@ -1,3 +1,42 @@
+"""
+OpenAI-Powered Annotation Script
+
+This script uses the OpenAI API (GPT model) to process Reddit comments and extract structured
+information about cannabis use, including dosage and compound mentions.
+
+Functionality:
+- Loads data (e.g., Reddit comments) from a CSV or DataFrame
+- Sends each text input to the OpenAI API with a specific prompt
+- Extracts structured annotations in JSON format
+- Writes results to a CSV file
+
+Requirements:
+- `openai`
+- `pandas`
+- `dotenv` for API key management
+
+Make sure to set your OpenAI API key in a `.env` file:
+OPENAI_API_KEY=your_key_here
+"""
+
+import os
+from openai import OpenAI
+import pandas as pd
+import time
+import json
+import csv
+
+from dotenv import load_dotenv
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
+
+# Initialize OpenAI client with API key
+client = OpenAI(
+  api_key=api_key
+)
+
+# === Annotation Function ===
+# Define a prompt to extract structured dosage and compound mentions from Reddit comments.
 import os
 from openai import OpenAI
 import pandas as pd
@@ -153,8 +192,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
 

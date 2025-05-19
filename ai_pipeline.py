@@ -1,3 +1,44 @@
+"""
+AI Relevance Scoring Pipeline for Reddit Comments
+
+This script uses the OpenAI API to assign relevance scores to Reddit comments discussing the therapeutic
+effects of cannabis. It is designed to prioritize or pre-filter data for manual annotation or further NLP tasks.
+
+Functionality:
+- Uses GPT model to classify comment relevance:
+    - 0 = No therapeutic discussion
+    - 1 = Mentions therapeutic effects + specific dosage
+    - 2 = Mentions therapeutic effects, but no dosage
+- Designed to be lightweight and scalable
+- Can be embedded in a larger filtering or triage pipeline
+
+Requirements:
+- `openai`
+- `pandas`
+- `dotenv` (for storing your API key in a `.env` file)
+
+Environment Setup:
+Ensure your `.env` file contains:
+OPENAI_API_KEY=your_key_here
+"""
+
+import os, re
+import pandas as pd
+from openai import OpenAI
+import time
+import json
+
+from dotenv import load_dotenv
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
+
+# Initialize OpenAI client
+client = OpenAI(
+  api_key=api_key
+)
+
+# === GPT Query Function ===
+# This function sends a comment to the GPT model and retrieves a structured relevance score.
 import os, re
 import pandas as pd
 from openai import OpenAI
