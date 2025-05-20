@@ -15,7 +15,7 @@ regex_patterns = list(regex_to_keyword.keys())
 text_columns = ["title", "post_text", "comment_body", "reply_body"]
 
 # ------------------------------
-# OPTION 1: STRUCTURE-PRESERVING FILTERING (NOT USED HERE)
+# OPTION 1: STRUCTURE-PRESERVING FILTERING 
 # ------------------------------
 def filter_by_row():
     """
@@ -72,11 +72,11 @@ def filter_by_row():
                     matched_rows.append(matched_row)
 
     matched_df = pd.DataFrame(matched_rows)
-    matched_df.to_excel("reddit_keyword_hits_deduplicated.xlsx", index=False)
+    matched_df.to_excel("reddit_keyword_hits_byrow.xlsx", index=False)
     return matched_df
 
 # ------------------------------
-# OPTION 2: STRUCTURE-AGNOSTIC FILTERING (USED)
+# OPTION 2: STRUCTURE-AGNOSTIC FILTERING 
 # ------------------------------
 def filter_by_textid():
     """
@@ -136,7 +136,7 @@ def filter_by_textid():
     comment_matches = extract_matches(comment_texts, "comment")
 
     # Step 3: Write results to Excel with separate sheets
-    with pd.ExcelWriter("reddit_deduplicated_filtered_by_source.xlsx") as writer:
+    with pd.ExcelWriter("reddit_filtered_by_textid.xlsx") as writer:
         pd.DataFrame(post_matches).to_excel(writer, sheet_name="Posts", index=False)
         pd.DataFrame(comment_matches).to_excel(writer, sheet_name="Comments", index=False)
 
