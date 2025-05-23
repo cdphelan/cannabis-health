@@ -19,22 +19,6 @@ Make sure to set your OpenAI API key in a `.env` file:
 OPENAI_API_KEY=your_key_here
 """
 
-import os
-from openai import OpenAI
-import pandas as pd
-import time
-import json
-import csv
-
-from dotenv import load_dotenv
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-
-# Initialize OpenAI client with API key
-client = OpenAI(
-  api_key=api_key
-)
-
 # === Annotation Function ===
 # Define a prompt to extract structured dosage and compound mentions from Reddit comments.
 import os

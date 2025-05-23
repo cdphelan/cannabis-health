@@ -102,10 +102,14 @@ if st.session_state.index < len(df):
         df.at[st.session_state.index, 'label'] = 0
         st.session_state.index += 1
         save_progress()
+        st.rerun()
+
     if col3.button("✅ Relevant", key="relevant"):
         df.at[st.session_state.index, 'label'] = 1
         st.session_state.index += 1
         save_progress()
+        st.rerun()
+
 else:
     st.success("🎉 All entries labeled!")
 
@@ -118,6 +122,8 @@ total = len(df)
 labeled = df['label'].notna().sum()
 st.progress(labeled / total)
 st.markdown(f"Progress automatically saved. **Labeled {labeled} of {total} entries ({labeled/total:.1%})**")
+st.markdown(f"IMPORTANT: close this window in between coding sessions. Some reloading browser behaviors may cause coding progress to be overwritten.")
+
 
 # --- Keyword Filter ---
 # come back to this feature later if you want it
