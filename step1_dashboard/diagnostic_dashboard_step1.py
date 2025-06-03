@@ -144,56 +144,50 @@ if page == "📈 Diagnostics":
 elif page == "📊 Keyword Frequency":
     st.header("Keyword Frequency")
 
-    # List of Google Drive file IDs for each dataset
-    FILE_IDS = {
-        "freq_by_subreddit": st.secrets["gdrive"]["freq_by_subreddit"],  
-        "freq_by_keyword": st.secrets["gdrive"]["freq_by_keyword"],  
-        "keyword_frequencies": st.secrets["gdrive"]["keyword_frequencies"],  
-        "keyword_hit_rates": st.secrets["gdrive"]["keyword_hit_rates"],  
-        "subreddit_hit_rates": st.secrets["gdrive"]["subreddit_hit_rates"],  
-    }
-
-    def load_data():
-        dfs = {}
-
-        for key, file_id in FILE_IDS.items():
-            # Download the CSV file from Google Drive
-            download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
-            response = requests.get(download_url)
-
-            if response.status_code != 200:
-                st.error(f"Failed to download {key} data. Status code: {response.status_code}")
-                return None
-
-            # Read into a DataFrame from the downloaded content
-            csv_content = io.StringIO(response.text)
-            df = pd.read_csv(csv_content, index_col=0 if key != "keyword_hit_rates" else None)
-
-            # Store in dictionary for later use
-            dfs[key] = df
-
-        # Return all DataFrames
-        return (
-            dfs["freq_by_subreddit"],
-            dfs["freq_by_keyword"],
-            dfs["keyword_frequencies"],
-            dfs["keyword_hit_rates"],
-            dfs["subreddit_hit_rates"]
-        )
-
-    # Example usage
-    freq_by_subreddit, freq_by_keyword, keyword_frequencies, keyword_hit_rates, subreddit_hit_rates = load_data()
-
-
-    # Load data
     @st.cache_data
     def load_data():
-        freq_by_subreddit = pd.read_csv("data/freq_by_subreddit.csv", index_col=0)
-        freq_by_keyword = pd.read_csv("data/freq_by_keyword.csv", index_col=0)
-        keyword_frequencies = pd.read_csv("data/keyword_frequencies.csv", index_col=0)
-        keyword_hit_rates = pd.read_csv("data/keyword_hit_rates.csv")
-        subreddit_hit_rates = pd.read_csv("data/subreddit_hit_rates.csv", index_col=0)
-        return freq_by_subreddit, freq_by_keyword, keyword_frequencies, keyword_hit_rates, subreddit_hit_rates
+        try:
+            freq_by_subreddit = pd.read_csv("data/freq_by_subreddit.csv", index_col=0)
+            freq_by_keyword = pd.read_csv("data/freq_by_keyword.csv", index_col=0)
+            keyword_frequencies = pd.read_csv("data/keyword_frequencies.csv", index_col=0)
+            keyword_hit_rates = pd.read_csv("data/keyword_hit_rates.csv")
+            subreddit_hit_rates = pd.read_csv("data/subreddit_hit_rates.csv", index_col=0)
+            return freq_by_subreddit, freq_by_keyword, keyword_frequencies, keyword_hit_rates, subreddit_hit_rates
+        except: 
+            # List of Google Drive file IDs for each dataset
+            FILE_IDS = {
+                "freq_by_subreddit": st.secrets["gdrive"]["freq_by_subreddit"],  
+                "freq_by_keyword": st.secrets["gdrive"]["freq_by_keyword"],  
+                "keyword_frequencies": st.secrets["gdrive"]["keyword_frequencies"],  
+                "keyword_hit_rates": st.secrets["gdrive"]["keyword_hit_rates"],  
+                "subreddit_hit_rates": st.secrets["gdrive"]["subreddit_hit_rates"],  
+            }
+               
+            dfs = {}
+
+            for key, file_id in FILE_IDS.items():
+                # Download the CSV file from Google Drive
+                download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
+                response = requests.get(download_url)
+
+                if response.status_code != 200:
+                    st.error(f"Failed to download {key} data. Status code: {response.status_code}")
+                    return None
+
+                # Read into a DataFrame from the downloaded content
+                csv_content = io.StringIO(response.text)
+                df = pd.read_csv(csv_content, index_col=0 if key != "keyword_hit_rates" else None)
+
+                # Store in dictionary for later use
+                dfs[key] = df
+
+            return (
+                dfs["freq_by_subreddit"],
+                dfs["freq_by_keyword"],
+                dfs["keyword_frequencies"],
+                dfs["keyword_hit_rates"],
+                dfs["subreddit_hit_rates"]
+            )
 
     freq_by_subreddit, freq_by_keyword, keyword_frequencies, keyword_hit_rates, subreddit_hit_rates = load_data()
 
