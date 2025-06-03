@@ -1,0 +1,32 @@
+
+You are classifying a single Reddit post for whether it discusses the therapeutic or health effects of cannabis.
+
+## Relevance Definition
+
+A post is considered **relevant** if it clearly discusses cannabis in relation to one of these three health concerns:
+- Pain
+- Anxiety
+- Sleep
+
+Mark as relevant if it includes:
+- Cannabis dosage, usage, or effects (positive or negative) related to those conditions
+- Mention of cannabis helping or worsening those symptoms
+- Withdrawal symptoms affecting those areas
+
+Do NOT mark as relevant if:
+- The post is only about recreational use
+- It discusses unrelated health effects (e.g., appetite, focus, nausea)
+- It is vague, off-topic, or does not clearly mention cannabis and one of the three target conditions
+
+---
+
+## Task
+
+Here is the post:
+
+Keyword: {keyword}
+Text: {text}
+
+Answer with only one number:
+- 1 = relevant
+- 0 = not relevant
