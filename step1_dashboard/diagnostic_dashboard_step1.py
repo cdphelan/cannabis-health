@@ -3,16 +3,38 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import io
+
+# Deployable data access
+from data_loader import load_data_from_gdrive
+
+# Hidden file ID (you could also store this in st.secrets)
+FILE_ID = st.secrets["gdrive"]["file_id"]
 
 st.set_page_config(layout="wide")
 
 # Load shared data
 @st.cache_data
 def load_data():
-    df = pd.read_csv("reddit_lines_with_gpt_relevance.csv")  # Assumes columns: id, subreddit, keyword, label
+    try: #try checking for local data first
+        df = pd.read_csv("reddit_lines_with_gpt_relevance.csv")  # Assumes columns: id, subreddit, keyword, label
+    except:
+        # download
+        download_url = f"https://drive.google.com/uc?export=download&id={FILE_ID}"
+        response = requests.get(download_url)
+        if response.status_code != 200:
+            st.error(f"Failed to download data: {response.status_code}")
+            return pd.DataFrame()
+
+        # read into df
+        csv_content = io.StringIO(response.text)
+        df = pd.read_csv(csv_content)
+
+    # wrangling
     df["keyword"] = df["keyword"].fillna("")
     df = df.assign(keyword=df["keyword"].str.split(";")).explode("keyword")
     df["keyword"] = df["keyword"].str.strip().str.lower()
+
     return df
 
 df_raw = load_data()
