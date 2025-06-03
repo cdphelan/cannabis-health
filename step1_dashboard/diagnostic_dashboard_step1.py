@@ -5,8 +5,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import io
 
-# Deployable data access
-from data_loader import load_data_from_gdrive
 
 # Hidden file ID (you could also store this in st.secrets)
 FILE_ID = st.secrets["gdrive"]["file_id"]
@@ -19,7 +17,7 @@ def load_data():
     try: #try checking for local data first
         df = pd.read_csv("reddit_lines_with_gpt_relevance.csv")  # Assumes columns: id, subreddit, keyword, label
     except:
-        # download
+        # download (for deployed version)
         download_url = f"https://drive.google.com/uc?export=download&id={FILE_ID}"
         response = requests.get(download_url)
         if response.status_code != 200:
