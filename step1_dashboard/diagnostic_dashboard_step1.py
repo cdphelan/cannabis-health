@@ -4,6 +4,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import io
+import requests
 
 
 # Hidden file ID (you could also store this in st.secrets)
