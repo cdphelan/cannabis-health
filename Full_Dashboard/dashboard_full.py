@@ -13,8 +13,9 @@ import json
 # === CONFIG === #
 # Hidden file ID (you could also store this in st.secrets)
 # FILE_ID = st.secrets["gdrive"]["file_id"]
-FULL_DATA_PATH = "data/dashboard_csv_data.csv"
-GOLD_LABEL_PATH = "data/bronze_standard_codes_traintest.csv"
+# WHEN IN LOCAL - all these ("Full_Dashboard/data/) need to be changed to these ("data/)
+FULL_DATA_PATH = "Full_Dashboard/data/dashboard_csv_data.csv"
+GOLD_LABEL_PATH = "Full_Dashboard/data/bronze_standard_codes_traintest.csv"
 
 st.set_page_config(layout="wide")
 
@@ -341,7 +342,7 @@ def display_annotation_details(ann_dict):
 # === Load Data ===
 #@st.cache_data
 def load_data():
-    df = pd.read_csv("data/fulltext_labeled_examples.csv")
+    df = pd.read_csv("Full_Dashboard/data/fulltext_labeled_examples.csv")
     return df
 
 df = load_data()
@@ -461,9 +462,9 @@ if page == "📄 Sample Annotations":
 
     st.subheader("📄 Sample Text & Annotations")
 
-    annotations = load_annotations("data/annotated_comments.jsonl")
+    annotations = load_annotations("Full_Dashboard/data/annotated_comments.jsonl")
     annotations = [a for a in annotations if a.get("annotations")]
-    text_map = load_text_map("data/annotated_text_lookup.csv")  # CSV with id,text
+    text_map = load_text_map("Full_Dashboard/data/annotated_text_lookup.csv")  # CSV with id,text
 
     if not annotations:
         st.error("No annotations found.")
