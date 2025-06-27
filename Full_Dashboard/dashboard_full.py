@@ -39,16 +39,16 @@ CATEGORY_COLORS = {
 # TODO(dev): better handling of the keyword_matches table, which currently needs to be manually refreshed with populate_keyword_matches.py
 # @st.cache_data
 def load_data_dual():
-    try:
-        df_full = pd.read_csv(FULL_DATA_PATH)
-    except:
-        download_url = f"https://drive.google.com/uc?export=download&id={FILE_ID}"
-        response = requests.get(download_url)
-        if response.status_code != 200:
-            st.error(f"Failed to download data: {response.status_code}")
-            return pd.DataFrame(), pd.DataFrame()
-        csv_content = io.StringIO(response.text)
-        df_full = pd.read_csv(csv_content)
+    # try:
+    df_full = pd.read_csv(FULL_DATA_PATH)
+    # except:
+    #     download_url = f"https://drive.google.com/uc?export=download&id={FILE_ID}"
+    #     response = requests.get(download_url)
+    #     if response.status_code != 200:
+    #         st.error(f"Failed to download data: {response.status_code}")
+    #         return pd.DataFrame(), pd.DataFrame()
+    #     csv_content = io.StringIO(response.text)
+    #     df_full = pd.read_csv(csv_content)
 
     df_full["keyword"] = df_full["keyword"].fillna("")
     # df_full = df_full[(df_full["keyword"] != "") | (df_full["subset"] == "random_kfails")] #cut the random lines with no keyword matches - I think they're version conflicts where a comment was deleted
