@@ -19,6 +19,69 @@ GOLD_LABEL_PATH = "Full_Dashboard/data/bronze_standard_codes_traintest.csv"
 
 st.set_page_config(layout="wide")
 
+# === INTRO DROP DOWN ====
+# Initialize toggle in session state
+if "show_intro" not in st.session_state:
+    st.session_state.show_intro = True
+
+def toggle_intro():
+    st.session_state.show_intro = not st.session_state.show_intro
+
+# Style for full-width collapsible panel
+st.markdown("""
+    <style>
+    .intro-box {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-bottom: 2px solid #ccc;
+        box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+        border-radius: 0 0 12px 12px;
+        margin-bottom: 1rem;
+    }
+    .toggle-button {
+        font-size: 20px;
+        color: #555;
+        margin-bottom: 10px;
+        cursor: pointer;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+
+# Intro Panel
+if st.session_state.show_intro:
+    st.markdown("""
+    <div class="intro-box">
+        <h1>How Do Inputs Change Outputs?</h1>
+        <p><em>An interactive NLP pipeline to explore how small decisions shape big model outcomes.</em></p>
+        <p>This dashboard compares how classical machine learning and GenAI models perform on a single task: finding health-related cannabis discussions on Reddit. Explore how changes in filters, prompts, and models affect what gets labeled, and what gets missed.</p>
+        <p><strong>How to get started:</strong></p>
+        <ol>
+            <li>Make sure you are on the diagnostics tab (top left sidebar).</li>
+            <li>Select which model you want to use (dropdown menu in left sidebar).</li>
+            <li>Check the model's performance against the gold standard data, labeled by humans (top of main pane).</li>
+            <li>Use the sliders (left sidebar) to exclude different keywords and subreddits and see if your decisions change the performance.</li>
+        </ol>
+        <p>The <strong>tables and charts below the performance metrics</strong> will help you explore the signal to noise ratio of different keywords and subreddits. In other tabs, see <strong>full text examples</strong> of how models chose to label posts (Sample Labels), and <strong>a preview of annotations</strong> performed by GenAI (Sample Annotations).</p>
+        <p><strong>Click the arrow below</strong> to hide this screen and start exploring!</p>
+        <p style="color:red; font-family:Courier, monospace;"><strong>NOTE:</strong> This is a <strong>PROTOTYPE</strong>. Errors and bugs may exist.</p>
+        <p><em>First author & developer: Dr. Chanda Phelan Kane. Part of the CannTalk project by Dr. Kristina Jackson (Rutgers U) and Dr. Jane Metrik (Brown U).</em></p>
+    </div>
+    """, unsafe_allow_html=True)
+
+       # <p>This interactive dashboard lets you explore how different analysis choices — like keyword filters, prompt phrasing, and model selection — affect what gets classified as a cannabis-related health post. We compare traditional machine learning with GPT-style GenAI to show how subtle input decisions can shape outcomes.</p>
+       #  <p>The goal is improved transparency: exploring if and how your decisions upstream can change the downstream label.</p>
+       #  <p>For this dataset, the goal is to sift through Reddit data and, as cleanly as possible, return all the posts and comments related to cannabis and its perceived health effects.</p>
+
+
+# Render toggle button with key
+if st.session_state.show_intro:
+    st.button("⬆ Hide intro", key="hide_btn", on_click=toggle_intro)
+else:
+    st.button("⬇ Show intro", key="show_btn", on_click=toggle_intro)
+
+# === END INTRO DROP DOWN ===
+
 # CATEGORY_COLORS reused from original interface
 CATEGORY_COLORS = {
     "compound": "#FF6B6B",
@@ -154,7 +217,7 @@ if page == "📈 Diagnostics":
     df_base = df_base.drop_duplicates("id") #this should be redundant
     
     # Diagnostic Metrics
-    st.subheader("🧪 Diagnostic Metrics")
+    # st.subheader("🧪 Diagnostic Metrics")
 
     # renaming some columns for prep
     gold_df = gold_df.rename(columns={"relevant": "relevance_true"})
@@ -176,8 +239,6 @@ if page == "📈 Diagnostics":
     # print((df_eval_filtered["relevance_true"] == 1).sum())
     print(len(df_base_excluded.merge(gold_eval, on="id")))
 
-
-
     true_positives = ((df_eval_filtered["relevance_pred"] == 1) & (df_eval_filtered["relevance_true"] == 1)).sum()
     predicted_positives = (df_eval_filtered["relevance_pred"] == 1).sum()
     actual_positives = (df_eval_filtered["relevance_true"] == 1).sum()
@@ -190,11 +251,6 @@ if page == "📈 Diagnostics":
     total = len(df_eval)
     relevant = df_eval["relevance_pred"].sum()
 
-    col_a1, col_a2, col_a3 = st.columns(3)
-    col_a1.metric("📦 Filtered Rows", total)
-    col_a2.metric("🤖 Predicted Relevant", int(relevant))
-    col_a3.metric("🔍 From Keyword Match to Semantic Relevance", f"{int(relevant) / total:.2%}")
-
     st.markdown("### ✅ Evaluation Against Gold Labels")
     col1, col2, col3, col4, col5 = st.columns(5)
     col1.metric("🔍 Evaluation Rows", len(df_eval_filtered))
@@ -202,6 +258,12 @@ if page == "📈 Diagnostics":
     col3.metric("🎯 Precision (Gold)", f"{precision:.2%}")
     col4.metric("📈 Recall (Gold)", f"{recall:.2%}")
     col5.metric("📊 F1 Score (Gold)", f"{f1:.2f}")
+
+    st.markdown("### Full Dataset Metrics")
+    col_a1, col_a2, col_a3 = st.columns(3)
+    col_a1.metric("📦 Filtered Rows", total)
+    col_a2.metric("🤖 Predicted Relevant", int(relevant))
+    col_a3.metric("🔍 From Keyword Match to Semantic Relevance", f"{int(relevant) / total:.2%}")
 
     # Usefulness Tables
     st.markdown("### 🔑 Keyword and Subreddit Usefulness")
