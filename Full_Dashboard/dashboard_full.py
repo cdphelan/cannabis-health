@@ -19,6 +19,16 @@ GOLD_LABEL_PATH = "Full_Dashboard/data/bronze_standard_codes_traintest.csv"
 
 st.set_page_config(layout="wide")
 
+# Override default theme temporarily
+st.markdown("""
+    <style>
+        body {
+            color: #000000;
+            background-color: #ffffff;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
 # === INTRO DROP DOWN ====
 # Initialize toggle in session state
 if "show_intro" not in st.session_state:
@@ -48,37 +58,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# Intro Panel
-if st.session_state.show_intro:
-    st.markdown("""
-    <div class="intro-box">
-        <h1>How Do Inputs Change Outputs?</h1>
-        <p><em>An interactive NLP pipeline to explore how small decisions shape big model outcomes.</em></p>
-        <p>This dashboard compares how classical machine learning and GenAI models perform on a single task: finding health-related cannabis discussions on Reddit. Explore how changes in filters, prompts, and models affect what gets labeled, and what gets missed.</p>
-        <p><strong>How to get started:</strong></p>
-        <ol>
-            <li>Make sure you are on the diagnostics tab (top left sidebar).</li>
-            <li>Select which model you want to use (dropdown menu in left sidebar).</li>
-            <li>Check the model's performance against the gold standard data, labeled by humans (top of main pane).</li>
-            <li>Use the sliders (left sidebar) to exclude different keywords and subreddits and see if your decisions change the performance.</li>
-        </ol>
-        <p>The <strong>tables and charts below the performance metrics</strong> will help you explore the signal to noise ratio of different keywords and subreddits. In other tabs, see <strong>full text examples</strong> of how models chose to label posts (Sample Labels), and <strong>a preview of annotations</strong> performed by GenAI (Sample Annotations).</p>
-        <p><strong>Click the arrow below</strong> to hide this screen and start exploring!</p>
-        <p style="color:red; font-family:Courier, monospace;"><strong>NOTE:</strong> This is a <strong>PROTOTYPE</strong>. Errors and bugs may exist.</p>
-        <p><em>First author & developer: Dr. Chanda Phelan Kane. Part of the CannTalk project by Dr. Kristina Jackson (Rutgers U) and Dr. Jane Metrik (Brown U).</em></p>
-    </div>
-    """, unsafe_allow_html=True)
 
-       # <p>This interactive dashboard lets you explore how different analysis choices — like keyword filters, prompt phrasing, and model selection — affect what gets classified as a cannabis-related health post. We compare traditional machine learning with GPT-style GenAI to show how subtle input decisions can shape outcomes.</p>
-       #  <p>The goal is improved transparency: exploring if and how your decisions upstream can change the downstream label.</p>
-       #  <p>For this dataset, the goal is to sift through Reddit data and, as cleanly as possible, return all the posts and comments related to cannabis and its perceived health effects.</p>
-
-
-# Render toggle button with key
-if st.session_state.show_intro:
-    st.button("⬆ Hide intro", key="hide_btn", on_click=toggle_intro)
-else:
-    st.button("⬇ Show intro", key="show_btn", on_click=toggle_intro)
 
 # === END INTRO DROP DOWN ===
 
@@ -97,6 +77,7 @@ CATEGORY_COLORS = {
     "needs_review": "#FFB703",
     "review_reason": "#FB8500"
 }
+
 
 # === LOAD DATA === #
 # TODO(dev): Handle missing relevance values more explicitly before production
@@ -142,7 +123,7 @@ df_keywords, df_base = load_data_dual()
 gold_df = pd.read_csv(GOLD_LABEL_PATH)
 
 # Sidebar page navigation
-page = st.sidebar.radio("Select a Page", ["📈 Diagnostics", "📄 Sample Labels", "📄 Sample Annotations"])
+page = st.sidebar.radio("Select a Page", ["💡 Introduction", "📈 Diagnostics", "📄 Sample Labels", "📝 Sample Annotations"])
 
 #select which model to use
 models = df_base["model"].dropna().astype(str).unique()
@@ -150,6 +131,50 @@ selected_model = st.sidebar.selectbox("Select learning model:", sorted(models))
 
 #redundant for Tab1, creates a standard global dataset. only if needed for other tabs
 # df_base = apply_filters(df_base, selected_model, exclude_kfails=True)
+
+if page == "💡 Introduction":
+    st.header("How Do Inputs Change Outputs?")
+    st.markdown("_An interactive NLP pipeline to explore how small decisions shape big model outcomes._")
+
+    st.write(
+        """This dashboard compares how classical machine learning and GenAI models perform on a single task: 
+        finding health-related cannabis discussions on Reddit. Explore how changes in filters, prompts, and models affect 
+        what gets labeled, and what gets missed."""
+    )
+
+    st.markdown(
+        '<span style="color:red;">**If you are at RSMj**, feel free to track down Chanda for a demo of the dashboard! She is also interested in developing this tool out for other projects.',
+        unsafe_allow_html=True,
+    )
+    
+    st.markdown("### How to get started:")
+    st.image("Full_Dashboard/img/page_tabs.png", width=300, caption="Flip through different tabs to explore.")
+    st.markdown("**To explore how keywords and subreddits affect different models:**")
+    st.markdown(
+        """
+1. Make sure you are on the 📈 Diagnostics tab (top left sidebar).  
+2. Select which model you want to use (dropdown menu in left sidebar).  
+3. Check the model's performance against the gold standard data, labeled by humans (top of main pane).  
+4. Use the sliders (left sidebar) to exclude different keywords and subreddits and see if your decisions change the performance.  
+"""
+    )
+
+    st.markdown("**To explore the decisions models make about whether to include a post for more analysis:**")
+    st.markdown("Check out 📄 Sample Labels, which shows real-text examples and the models' decisions about it.")
+
+    st.markdown("**To explore how GPT-4.1 Nano performed in an annotation task:**")
+    st.markdown("Check out 📝 Sample Annotations, which shows annotations of real-text examples.")
+
+    st.markdown(
+        '<span style="color:red; font-family:Courier;"><strong>NOTE:</strong> This is a prototype for <strong>DEMONSTRATION PURPOSES</strong>. Outcomes are not verified.</span>',
+        unsafe_allow_html=True,
+    )
+
+
+    st.markdown(
+        "_First author & developer: Dr. Chanda Phelan Kane. Part of the CannTalk project by Dr. Kristina Jackson (Rutgers U) and Dr. Jane Metrik (Brown U)._"
+    )
+
 
 if page == "📈 Diagnostics":
     # st.header("🧪 Diagnostic View")
@@ -422,7 +447,7 @@ if filtered_df.empty:
 categories = [
     "true_positive", "false_positive", 
     "false_negative", "true_negative", 
-    "low_confidence", "controversial"
+    "low_confidence"
 ]
 
 category_labels = {
@@ -430,8 +455,7 @@ category_labels = {
     "false_positive": "⚠️ False Positives",
     "false_negative": "❌ False Negatives",
     "true_negative": "✔️ True Negatives",
-    "low_confidence": "🤔 Low Confidence",
-    "controversial": "🔥 Controversial"
+    "low_confidence": "🤔 Low Confidence"
 }
 
 def confidence_bin(score):
@@ -449,7 +473,8 @@ def confidence_bin(score):
 
 if page == "📄 Sample Labels":
     # === Category Viewer with Navigation ===
-    st.title("🧾 Model Output: Text Examples")
+    st.title("Model Output: Text Examples")
+    st.markdown("Note: Prediction is the model's decision; Gold is the 'right answer' determined by human coders.")
 
     for cat in categories:
         cat_df = filtered_df[filtered_df["category"] == cat]
@@ -517,7 +542,7 @@ def load_text_map(csv_path):
     return dict(zip(df["id"], df["text"]))
 
 # --- Tab logic inside Streamlit app ---
-if page == "📄 Sample Annotations":
+if page == "📝 Sample Annotations":
     # Initialize session state variable if not set
     if "nav_index" not in st.session_state:
         st.session_state.nav_index = 0
